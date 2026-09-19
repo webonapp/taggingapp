@@ -5,6 +5,7 @@ struct TimelineView: View {
     @Binding var currentTime: Double
     let duration: Double
     @Binding var selectedRowID: UUID?
+    @State private var selectedInstanceID: UUID?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -31,6 +32,11 @@ struct TimelineView: View {
             }
         }
         .background(Color(nsColor: .windowBackgroundColor))
+        .onDeleteCommand {
+            guard let rowID = selectedRowID, let instanceID = selectedInstanceID else { return }
+            store.deleteInstance(rowID: rowID, instanceID: instanceID)
+            selectedInstanceID = nil
+        }
     }
 
     private var ruler: some View {
@@ -73,21 +79,38 @@ struct TimelineView: View {
 
     private func instanceView(_ instance: TimelineInstance, row: TimelineRow) -> some View {
         let width = max(CGFloat(instance.duration / max(duration, 1)) * 900, 8)
-        return HStack(spacing: 3) {
-            Text(instance.labels.first?.name ?? "#\(instance.instanceNumber)")
-                .font(.caption2)
-                .lineLimit(1)
-            if instance.isFlagged { Image(systemName: "flag.fill") }
+        return ZStack(alignment: .leading) {
+            HStack(spacing: 3) {
+                Text(instance.labels.first?.name ?? "#\(instance.instanceNumber)")
+                    .font(.caption2)
+                    .lineLimit(1)
+                if instance.isFlagged { Image(systemName: "flag.fill") }
+            }
+            .padding(.horizontal, 7)
+            .frame(width: width, height: 32, alignment: .leading)
+            .background(Color(hex: row.colorHex).opacity(selectedInstanceID == instance.id ? 1 : 0.75))
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+            .onTapGesture {
+                selectedInstanceID = instance.id
+                selectedRowID = row.id
+                currentTime = instance.startTime
+            }
+            .gesture(DragGesture().onEnded { value in
+                let delta = Double(value.translation.width / 900) * max(duration, 1)
+                store.updateInstance(rowID: row.id, instanceID: instance.id, startTime: instance.startTime + delta, endTime: instance.endTime + delta)
+            })
+            Rectangle().fill(.white.opacity(0.001)).frame(width: 8, height: 32)
+                .gesture(DragGesture().onEnded { value in
+                    let delta = Double(value.translation.width / 900) * max(duration, 1)
+                    store.updateInstance(rowID: row.id, instanceID: instance.id, startTime: instance.startTime + delta)
+                })
+            Rectangle().fill(.white.opacity(0.001)).frame(width: 8, height: 32).offset(x: max(width - 8, 0))
+                .gesture(DragGesture().onEnded { value in
+                    let delta = Double(value.translation.width / 900) * max(duration, 1)
+                    store.updateInstance(rowID: row.id, instanceID: instance.id, endTime: instance.endTime + delta)
+                })
         }
-        .padding(.horizontal, 5)
         .frame(width: width, height: 32, alignment: .leading)
-        .background(Color(hex: row.colorHex).opacity(0.75))
-        .clipShape(RoundedRectangle(cornerRadius: 4))
-        .onTapGesture { currentTime = instance.startTime }
-        .gesture(DragGesture().onEnded { value in
-            let delta = Double(value.translation.width / 900) * max(duration, 1)
-            store.updateInstance(rowID: row.id, instanceID: instance.id, startTime: instance.startTime + delta, endTime: instance.endTime + delta)
-        })
         .help(instance.note)
     }
 }

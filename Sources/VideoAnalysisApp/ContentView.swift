@@ -12,6 +12,7 @@ struct ContentView: View {
     @State private var showAnalysis = false
     @State private var showHeatmap = false
     @State private var selectedAngleID: UUID?
+    @State private var showCodeEditor = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -57,6 +58,9 @@ struct ContentView: View {
         .sheet(isPresented: $showHeatmap) {
             HeatmapView().environmentObject(store)
         }
+        .sheet(isPresented: $showCodeEditor) {
+            CodeWindowEditorView().environmentObject(store)
+        }
     }
 
     private var toolbar: some View {
@@ -86,6 +90,7 @@ struct ContentView: View {
             Button("CSV") { store.exportCSV() }
             Button("Analisi") { showAnalysis = true }
             Button("Heatmap") { showHeatmap = true }
+            Button("Editor Code Window") { showCodeEditor = true }
             if let slide = store.project.playlist.slides.first {
                 Stepper("Slide \(slide.duration, specifier: "%.1f")s", value: Binding(get: { store.project.playlist.slides.first?.duration ?? 3 }, set: { store.updateFirstSlideDuration($0) }), in: 0.1...60, step: 0.1)
                     .help("Durata della prima slide della playlist")

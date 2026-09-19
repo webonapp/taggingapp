@@ -207,6 +207,19 @@ final class ProjectStore: ObservableObject {
         touch()
     }
 
+    func addCodeButton() {
+        history.record(project)
+        let button = CodeButton(name: "Nuovo codice", rowName: "Nuova riga", colorHex: "#6E48AA", hotkey: "", mode: .toggle)
+        project.codeWindow.buttons.append(button)
+        touch()
+    }
+
+    func deleteCodeButton(id: UUID) {
+        history.record(project)
+        project.codeWindow.buttons.removeAll { $0.id == id }
+        touch()
+    }
+
     func exportCSV() {
         do { _ = try CSVExporter.export(project: project); status = "CSV esportato" }
         catch { status = "Errore CSV: \(error.localizedDescription)" }
@@ -244,6 +257,15 @@ final class ProjectStore: ObservableObject {
         history.record(project)
         project.timeline.rows[rowIndex].instances[instanceIndex].location = location
         touch()
+    }
+
+    func deleteInstance(rowID: UUID, instanceID: UUID) {
+        guard let rowIndex = project.timeline.rows.firstIndex(where: { $0.id == rowID }) else { return }
+        guard project.timeline.rows[rowIndex].instances.contains(where: { $0.id == instanceID }) else { return }
+        history.record(project)
+        project.timeline.rows[rowIndex].instances.removeAll { $0.id == instanceID }
+        touch()
+        status = "Istanza eliminata"
     }
 
     func undo() {

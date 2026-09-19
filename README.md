@@ -16,6 +16,7 @@ Il prototipo implementa il primo flusso operativo:
 - importazione sperimentale di `.SCVideo`, `.SCTimeline` e `Playlist.SCClips`;
 - esportazione XML e del primo clip video;
 - salvataggio del progetto come pacchetto `.analysisproject`;
+- copia automatica del video nella cartella `Media` del pacchetto;
 - undo/redo e spostamento delle istanze sulla timeline;
 - slide immagine nella playlist con durata predefinita di 3 secondi e conversione in MP4;
 - Find Window per ricercare righe, label, note e flag;
@@ -27,6 +28,8 @@ Il prototipo implementa il primo flusso operativo:
 - Sorter playlist con riordino drag & drop;
 - editor Heatmap tramite selezione evento e click sul campo;
 - Output Window con scripting di conteggi, durate, label e righe;
+- editor visuale della Code Window con inspector per nome, riga, hotkey, colore, lead e lag;
+- script `scripts/validate.sh` per validare build e test in modo ripetibile;
 - titoli e overlay testuali salvati nella playlist;
 - diagnostica di file `.CWcode2SC` e export JSON della playlist nativa;
 - catalogo centralizzato delle shortcut Sportscode fornite.
@@ -77,6 +80,7 @@ Il formato nativo dell’app è separato dai formati proprietari Sportscode. I p
 
 - progetto Xcode macOS distribuito;
 - timeline editabile con drag e resize;
+- selezione, resize e cancellazione delle istanze dalla timeline;
 - undo/redo completo;
 - playlist con Sorter e gruppi;
 - XML Sportscode compatibile;

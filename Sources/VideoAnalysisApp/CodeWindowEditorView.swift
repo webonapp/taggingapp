@@ -30,23 +30,32 @@ struct CodeWindowEditorView: View {
                     Text("Inspector").font(.headline)
                     TextField("Nome", text: binding(for: index, keyPath: \.name))
                     TextField("Riga associata", text: binding(for: index, keyPath: \.rowName))
+                    TextField("Categoria Sportscode", text: binding(for: index, keyPath: \.secondaryName))
                     TextField("Hotkey", text: binding(for: index, keyPath: \.hotkey))
                     Picker("Modalità", selection: binding(for: index, keyPath: \.mode)) {
                         Text("Toggle").tag(CodeButton.Mode.toggle)
                         Text("Istantaneo").tag(CodeButton.Mode.instant)
+                        Text("In / Out").tag(CodeButton.Mode.inOut)
+                        Text("Solo Out").tag(CodeButton.Mode.outOnly)
                     }
+                    Toggle("Mostra output", isOn: binding(for: index, keyPath: \.showOutput))
+                    Toggle("Popola timeline", isOn: binding(for: index, keyPath: \.populateTimeline))
+                    Text("Script Sportscode").font(.headline)
+                    TextEditor(text: scriptBinding(for: index))
+                        .font(.system(.caption, design: .monospaced))
+                        .frame(minHeight: 140)
                     HStack {
                         Text("Colore")
                         TextField("#RRGGBB", text: binding(for: index, keyPath: \.colorHex))
                     }
                     HStack {
                         Text("Lead")
-                        Slider(value: binding(for: index, keyPath: \.leadTime), in: 0...10)
+                        Slider(value: binding(for: index, keyPath: \.leadTime), in: 0...60)
                         Text("\(store.project.codeWindow.buttons[index].leadTime, specifier: "%.1f")s")
                     }
                     HStack {
                         Text("Lag")
-                        Slider(value: binding(for: index, keyPath: \.lagTime), in: 0...10)
+                        Slider(value: binding(for: index, keyPath: \.lagTime), in: 0...60)
                         Text("\(store.project.codeWindow.buttons[index].lagTime, specifier: "%.1f")s")
                     }
                     Button("Elimina pulsante", role: .destructive) { store.deleteCodeButton(id: selectedID); self.selectedID = nil }
@@ -62,5 +71,12 @@ struct CodeWindowEditorView: View {
 
     private func binding<Value>(for index: Int, keyPath: WritableKeyPath<CodeButton, Value>) -> Binding<Value> {
         Binding(get: { store.project.codeWindow.buttons[index][keyPath: keyPath] }, set: { value in store.project.codeWindow.buttons[index][keyPath: keyPath] = value; store.touch() })
+    }
+
+    private func scriptBinding(for index: Int) -> Binding<String> {
+        Binding(
+            get: { store.project.codeWindow.buttons[index].script ?? "" },
+            set: { value in store.project.codeWindow.buttons[index].script = value; store.touch() }
+        )
     }
 }

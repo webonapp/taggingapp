@@ -5,7 +5,6 @@ struct TimelineView: View {
     @Binding var currentTime: Double
     let duration: Double
     @Binding var selectedRowID: UUID?
-    @State private var selectedInstanceID: UUID?
 
     var body: some View {
         VStack(spacing: 0) {
@@ -33,9 +32,9 @@ struct TimelineView: View {
         }
         .background(Color(nsColor: .windowBackgroundColor))
         .onDeleteCommand {
-            guard let rowID = selectedRowID, let instanceID = selectedInstanceID else { return }
+            guard let rowID = store.selectedRowID, let instanceID = store.selectedInstanceIDs.first else { return }
             store.deleteInstance(rowID: rowID, instanceID: instanceID)
-            selectedInstanceID = nil
+            store.clearSelection()
         }
     }
 
@@ -88,10 +87,10 @@ struct TimelineView: View {
             }
             .padding(.horizontal, 7)
             .frame(width: width, height: 32, alignment: .leading)
-            .background(Color(hex: row.colorHex).opacity(selectedInstanceID == instance.id ? 1 : 0.75))
+            .background(Color(hex: row.colorHex).opacity(store.selectedInstanceIDs.contains(instance.id) ? 1 : 0.75))
             .clipShape(RoundedRectangle(cornerRadius: 4))
             .onTapGesture {
-                selectedInstanceID = instance.id
+                store.selectInstance(rowID: row.id, instanceID: instance.id)
                 selectedRowID = row.id
                 currentTime = instance.startTime
             }

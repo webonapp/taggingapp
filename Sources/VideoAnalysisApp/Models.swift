@@ -106,6 +106,39 @@ struct LabelGroup: Codable, Identifiable {
 struct CodeWindowModel: Codable {
     var name: String
     var buttons: [CodeButton]
+    var links: [CodeWindowLink] = []
+    var categories: [CodeWindowCategory] = []
+    var globalLeadTime: Double = 0
+    var globalLagTime: Double = 0
+    var sourceFormat: String? = nil
+    var sourceArchiveData: Data? = nil
+
+    enum CodingKeys: String, CodingKey {
+        case name, buttons, links, categories, globalLeadTime, globalLagTime, sourceFormat, sourceArchiveData
+    }
+
+    init(name: String, buttons: [CodeButton], links: [CodeWindowLink] = [], categories: [CodeWindowCategory] = [], globalLeadTime: Double = 0, globalLagTime: Double = 0, sourceFormat: String? = nil, sourceArchiveData: Data? = nil) {
+        self.name = name
+        self.buttons = buttons
+        self.links = links
+        self.categories = categories
+        self.globalLeadTime = globalLeadTime
+        self.globalLagTime = globalLagTime
+        self.sourceFormat = sourceFormat
+        self.sourceArchiveData = sourceArchiveData
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        name = try c.decodeIfPresent(String.self, forKey: .name) ?? "Code Window"
+        buttons = try c.decodeIfPresent([CodeButton].self, forKey: .buttons) ?? []
+        links = try c.decodeIfPresent([CodeWindowLink].self, forKey: .links) ?? []
+        categories = try c.decodeIfPresent([CodeWindowCategory].self, forKey: .categories) ?? []
+        globalLeadTime = try c.decodeIfPresent(Double.self, forKey: .globalLeadTime) ?? 0
+        globalLagTime = try c.decodeIfPresent(Double.self, forKey: .globalLagTime) ?? 0
+        sourceFormat = try c.decodeIfPresent(String.self, forKey: .sourceFormat)
+        sourceArchiveData = try c.decodeIfPresent(Data.self, forKey: .sourceArchiveData)
+    }
 
     static func defaultWindow() -> CodeWindowModel {
         CodeWindowModel(name: "Code Window", buttons: [
@@ -118,7 +151,7 @@ struct CodeWindowModel: Codable {
 }
 
 struct CodeButton: Codable, Identifiable {
-    enum Mode: String, Codable { case toggle, instant }
+    enum Mode: String, Codable { case toggle, instant, inOut, outOnly }
     var id = UUID()
     var name: String
     var rowName: String
@@ -129,6 +162,30 @@ struct CodeButton: Codable, Identifiable {
     var lagTime: Double = 0
     var defaultDuration: Double = 2
     var automaticLabels: [TimelineLabel] = []
+    var captureMode: String? = nil
+    var preSeconds: Double? = nil
+    var secondaryName: String = ""
+    var sportscodeType: Int? = nil
+    var actionType: Int? = nil
+    var showOutput: Bool = false
+    var populateTimeline: Bool = false
+    var script: String? = nil
+    var sourceIdentifier: String? = nil
+}
+
+struct CodeWindowLink: Codable, Identifiable {
+    var id = UUID()
+    var fromButtonID: UUID
+    var toButtonID: UUID
+    var type: Int = 1
+    var label: String? = nil
+    var exclusive: Bool { type == 0 }
+}
+
+struct CodeWindowCategory: Codable, Identifiable {
+    var id = UUID()
+    var name: String
+    var buttonIDs: [UUID] = []
 }
 
 struct PlaylistModel: Codable {

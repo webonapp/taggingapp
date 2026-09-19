@@ -10,6 +10,8 @@ final class ProjectStore: ObservableObject {
     @Published var videoURL: URL?
     @Published var status = "Pronto"
     @Published var history = UndoRedoController()
+    @Published var selectedRowID: UUID?
+    @Published var selectedInstanceIDs: Set<UUID> = []
 
     init() {
         project.labels = .demo
@@ -123,6 +125,52 @@ final class ProjectStore: ObservableObject {
         status = "Clip aggiunta alla playlist"
     }
 
+    func selectInstance(rowID: UUID, instanceID: UUID, additive: Bool = false) {
+        selectedRowID = rowID
+        if additive { selectedInstanceIDs.insert(instanceID) }
+        else { selectedInstanceIDs = [instanceID] }
+    }
+
+    func clearSelection() { selectedInstanceIDs.removeAll(); selectedRowID = nil }
+
+    func selectedInstances() -> [(TimelineRow, TimelineInstance)] {
+        project.timeline.rows.flatMap { row in row.instances.filter { selectedInstanceIDs.contains($0.id) }.map { (row, $0) } }
+    }
+
+    func addSelectedToPlaylist() {
+        let selected = selectedInstances()
+        guard !selected.isEmpty else { status = "Seleziona almeno un taglio"; return }
+        history.record(project)
+        for (row, instance) in selected {
+            let clip = PlaylistClip(sourceRowID: row.id, sourceInstanceID: instance.id, startTime: instance.startTime, endTime: instance.endTime, title: "\(row.name) #\(instance.instanceNumber)", note: instance.note, labels: instance.labels)
+            project.playlist.clips.append(clip)
+        }
+        touch()
+        status = "\(selected.count) tagli inviati all'Ordinatore"
+    }
+
+    func updateSelectedTimes(start: Double? = nil, end: Double? = nil) {
+        guard !selectedInstanceIDs.isEmpty else { return }
+        history.record(project)
+        for rowIndex in project.timeline.rows.indices {
+            for instanceIndex in project.timeline.rows[rowIndex].instances.indices where selectedInstanceIDs.contains(project.timeline.rows[rowIndex].instances[instanceIndex].id) {
+                if let start { project.timeline.rows[rowIndex].instances[instanceIndex].startTime = max(0, start) }
+                if let end { project.timeline.rows[rowIndex].instances[instanceIndex].endTime = max(project.timeline.rows[rowIndex].instances[instanceIndex].startTime, end) }
+            }
+        }
+        touch()
+    }
+
+    func addNoteToSelected(_ note: String) {
+        history.record(project)
+        for rowIndex in project.timeline.rows.indices {
+            for instanceIndex in project.timeline.rows[rowIndex].instances.indices where selectedInstanceIDs.contains(project.timeline.rows[rowIndex].instances[instanceIndex].id) {
+                project.timeline.rows[rowIndex].instances[instanceIndex].note = note
+            }
+        }
+        touch()
+    }
+
     func importSportscodeTimeline() {
         let panel = NSOpenPanel()
         panel.allowedContentTypes = [.json]
@@ -233,6 +281,20 @@ final class ProjectStore: ObservableObject {
             let report = try CodeWindowCompatibility.inspect(url: url)
             status = "Code Window: \(report.notes)"
         } catch { status = "Errore Code Window: \(error.localizedDescription)" }
+    }
+
+    func importCodeWindow() {
+        let panel = NSOpenPanel()
+        panel.allowedFileTypes = ["CWcode2SC"]
+        panel.allowsMultipleSelection = false
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            let imported = try NativeCodeWindowImporter.importCodeWindow(at: url)
+            history.record(project)
+            project.codeWindow = imported
+            touch()
+            status = "Code Window importata: (imported.buttons.count) pulsanti, (imported.links.count) collegamenti"
+        } catch { status = "Errore import Code Window: \(error.localizedDescription)" }
     }
 
     func exportPlaylistReferenceJSON() {

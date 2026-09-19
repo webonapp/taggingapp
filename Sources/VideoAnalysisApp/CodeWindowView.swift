@@ -10,6 +10,11 @@ struct CodeWindowView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(store.project.codeWindow.name).font(.headline)
             Text("Premi i pulsanti o usa le hotkey").font(.caption).foregroundStyle(.secondary)
+            if !store.project.codeWindow.categories.isEmpty {
+                Text("\(store.project.codeWindow.categories.count) categorie · \(store.project.codeWindow.links.count) collegamenti")
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
             ScrollView {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                     ForEach(store.project.codeWindow.buttons) { button in
@@ -43,8 +48,9 @@ struct CodeWindowView: View {
             row = created
         }
         selectedRowID = row.id
-        if button.mode == .instant {
-            store.addInstance(rowID: row.id, start: max(0, currentTime - button.leadTime), end: currentTime + button.defaultDuration + button.lagTime, labels: button.automaticLabels)
+        if button.mode == .instant || button.mode == .outOnly {
+            let pre = button.preSeconds ?? button.leadTime
+            store.addInstance(rowID: row.id, start: max(0, currentTime - pre), end: currentTime + button.defaultDuration + button.lagTime, labels: button.automaticLabels)
         } else if activeButtons.contains(button.id) {
             activeButtons.remove(button.id)
             guard let index = store.project.timeline.rows.firstIndex(where: { $0.id == row.id }), let last = store.project.timeline.rows[index].instances.last else { return }

@@ -13,6 +13,7 @@ struct ContentView: View {
     @State private var showHeatmap = false
     @State private var selectedAngleID: UUID?
     @State private var showCodeEditor = false
+    @State private var showInspector = false
 
     var body: some View {
         VStack(spacing: 0) {
@@ -61,6 +62,9 @@ struct ContentView: View {
         .sheet(isPresented: $showCodeEditor) {
             CodeWindowEditorView().environmentObject(store)
         }
+        .sheet(isPresented: $showInspector) {
+            ClipInspectorView().environmentObject(store)
+        }
     }
 
     private var toolbar: some View {
@@ -80,6 +84,7 @@ struct ContentView: View {
             Button("Importa SCTimeline") { store.importSportscodeTimeline() }
             Button("Importa playlist") { store.importSportscodePlaylist() }
             Button("Analizza CWcode2SC") { store.inspectCodeWindow() }
+            Button("Importa Code Window") { store.importCodeWindow() }
             Button("Esporta playlist JSON") { store.exportPlaylistReferenceJSON() }
             Button("Esporta XML") { store.exportTimelineXML() }
             Button("Esporta clip") { store.exportFirstClip() }
@@ -91,6 +96,8 @@ struct ContentView: View {
             Button("Analisi") { showAnalysis = true }
             Button("Heatmap") { showHeatmap = true }
             Button("Editor Code Window") { showCodeEditor = true }
+            Button("Inspector") { showInspector = true }
+            Button("Ordinatore \(store.project.playlist.clips.count)") { store.addSelectedToPlaylist() }
             if let slide = store.project.playlist.slides.first {
                 Stepper("Slide \(slide.duration, specifier: "%.1f")s", value: Binding(get: { store.project.playlist.slides.first?.duration ?? 3 }, set: { store.updateFirstSlideDuration($0) }), in: 0.1...60, step: 0.1)
                     .help("Durata della prima slide della playlist")

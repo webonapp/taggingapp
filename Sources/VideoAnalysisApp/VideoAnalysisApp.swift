@@ -1,8 +1,16 @@
 import SwiftUI
+import AppKit
 
 @main
 struct VideoAnalysisApp: App {
     @StateObject private var store = ProjectStore()
+
+    init() {
+        #if os(macOS)
+        NSApplication.shared.setActivationPolicy(.regular)
+        NSApplication.shared.activate(ignoringOtherApps: true)
+        #endif
+    }
 
     var body: some Scene {
         WindowGroup("Video Analysis") {

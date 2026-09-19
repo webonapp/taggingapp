@@ -1,42 +1,86 @@
-# Video Analysis App
+# Tagging App
 
-Applicazione nativa macOS per analisi video sportiva.
+Applicazione nativa macOS per analisi video sportiva, ispirata ai flussi di lavoro di codifica, timeline e playlist usati negli strumenti professionali di performance analysis.
 
-## Direzione approvata
+> Il repository contiene il codice sorgente. La pagina `github.io` è una pagina informativa: l’applicazione vera viene eseguita su macOS tramite Xcode.
 
-- Swift 6 e SwiftUI
-- AVFoundation per video, audio ed esportazioni
-- timeline interna JSON versionata
-- Code Window nativa dell'app
-- playlist interna con esportazione video
-- importazione sperimentale dei pacchetti `.SCVideo` e `.SCPlaylist`
-- import/export XML in un modulo separato
+## Stato del progetto
 
-## Ordine di sviluppo
+Il prototipo implementa il primo flusso operativo:
 
-1. Player video e progetto salvabile
-2. Timeline con righe e istanze temporali
-3. Code Window con hotkey e codifica
-4. Label, note, flag e undo/redo
-5. Playlist e tagli esportabili
-6. Importazione dei campioni Sportscode
-7. Interoperabilità XML e compatibilità `.CWcode2SC`
+- player video MOV/MP4 con AVFoundation;
+- progetto salvabile in JSON;
+- timeline con righe e istanze temporali;
+- Code Window con pulsanti e hotkey;
+- label, note e playlist;
+- importazione sperimentale di `.SCVideo`, `.SCTimeline` e `Playlist.SCClips`;
+- esportazione XML e del primo clip video;
+- salvataggio del progetto come pacchetto `.analysisproject`;
+- undo/redo e spostamento delle istanze sulla timeline;
+- slide immagine nella playlist con durata predefinita di 3 secondi e conversione in MP4;
+- Find Window per ricercare righe, label, note e flag;
+- esportazione CSV della timeline;
+- Database, Sorter, Matrix e Report sulla timeline corrente;
+- Heatmap con coordinate spaziali normalizzate associate agli eventi;
+- supporto iniziale per più angoli video nel progetto;
+- selezione dell’angolo video attivo dal player;
+- Sorter playlist con riordino drag & drop;
+- editor Heatmap tramite selezione evento e click sul campo;
+- Output Window con scripting di conteggi, durate, label e righe;
+- titoli e overlay testuali salvati nella playlist;
+- diagnostica di file `.CWcode2SC` e export JSON della playlist nativa;
+- catalogo centralizzato delle shortcut Sportscode fornite.
 
-Il secondo incremento include l'importazione dei JSON `.SCTimeline` e
-`Playlist.SCClips`, l'esportazione XML generica e l'esportazione del primo clip
-della playlist tramite AVFoundation.
+Le funzioni di compatibilità completa con `.CWcode2SC` e `.SCPlaylist` sono ancora in sviluppo.
 
-## Shortcut
+## Apertura con Xcode
 
-Le shortcut fornite per macOS, Sportscode, playback, timeline, playlist, sorter,
-instance player e Code Window sono raccolte in `ShortcutCatalog.swift`. Il catalogo
-è centralizzato per consentire in seguito personalizzazione, conflitti e gestione
-delle modalità attive.
+1. Installa Xcode su macOS.
+2. Clona il repository oppure scarica il codice.
+3. Apri `Package.swift` con Xcode.
+4. Seleziona lo scheme `VideoAnalysisApp`.
+5. Esegui con `⌘R`.
 
-## Decisione sui formati
+Il progetto usa Swift 6, SwiftUI, AVFoundation e macOS 14 o superiore.
 
-Il formato nativo dell'app sarà separato dai formati Sportscode. I pacchetti Sportscode verranno importati in copia, senza modificare gli originali. La compatibilità `.CWcode2SC` sarà implementata solo dopo aver verificato più campioni reali.
+## Primo utilizzo
 
-## Primo criterio di successo
+1. Premi **Importa video** e scegli un file `.mov` o `.mp4`.
+2. Crea una riga con **Nuova riga** oppure usa la Code Window.
+3. Premi un pulsante della Code Window per creare un’istanza.
+4. Aggiungi label e note nella timeline.
+5. Inserisci il tag nella playlist.
+6. Salva il progetto.
 
-Importare un `.mov` o `.mp4`, creare un pulsante Code Window, generare un evento sulla timeline, aggiungere una label e una nota, salvare il progetto, riaprirlo ed esportare il taglio.
+## Struttura
+
+```text
+Package.swift
+Sources/VideoAnalysisApp/
+  Models.swift
+  ProjectStore.swift
+  ContentView.swift
+  TimelineView.swift
+  CodeWindowView.swift
+  SportscodeInterop.swift
+  SportscodePackageImporter.swift
+  VideoExporter.swift
+  ShortcutCatalog.swift
+Tests/VideoAnalysisAppTests/
+```
+
+## Formati
+
+Il formato nativo dell’app è separato dai formati proprietari Sportscode. I pacchetti Sportscode vengono importati in copia e gli originali non vengono modificati.
+
+## Sviluppo futuro
+
+- progetto Xcode macOS distribuito;
+- timeline editabile con drag e resize;
+- undo/redo completo;
+- playlist con Sorter e gruppi;
+- XML Sportscode compatibile;
+- import/export `.SCPlaylist`;
+- analisi `.CWcode2SC`;
+- database, Matrix e report;
+- supporto multi-angolo.

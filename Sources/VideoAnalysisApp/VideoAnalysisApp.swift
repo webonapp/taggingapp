@@ -18,6 +18,10 @@ struct VideoAnalysisApp: App {
                     .keyboardShortcut("o", modifiers: [.command])
                 Button("Salva progetto") { store.saveProject() }
                     .keyboardShortcut("s", modifiers: [.command])
+                Button("Annulla") { store.undo() }
+                    .keyboardShortcut("z", modifiers: [.command])
+                Button("Ripristina") { store.redo() }
+                    .keyboardShortcut("z", modifiers: [.command, .shift])
             }
         }
     }

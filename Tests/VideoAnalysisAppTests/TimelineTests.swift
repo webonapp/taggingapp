@@ -15,4 +15,13 @@ final class TimelineTests: XCTestCase {
         XCTAssertEqual(decoded.name, "Test")
         XCTAssertEqual(decoded.timeline.rows.first?.name, "Pressing")
     }
+
+    func testFindEngineFindsLabelsAndNotes() {
+        var project = AnalysisProject(name: "Find")
+        var row = TimelineRow(name: "Pressing")
+        row.instances = [TimelineInstance(startTime: 1, endTime: 3, labels: [TimelineLabel(name: "Occasione creata", group: "03. Occasioni")], note: "azione importante")]
+        project.timeline.rows = [row]
+        XCTAssertEqual(FindEngine.search(project: project, query: FindQuery(text: "occasione")).count, 1)
+        XCTAssertEqual(FindEngine.search(project: project, query: FindQuery(text: "importante")).count, 1)
+    }
 }

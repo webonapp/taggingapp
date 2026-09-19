@@ -8,8 +8,42 @@ struct AnalysisProject: Codable, Identifiable {
     var labels = LabelLibrary()
     var playlist = PlaylistModel()
     var codeWindow = CodeWindowModel.defaultWindow()
+    var angles: [MediaAngle] = []
     var createdAt = Date()
     var modifiedAt = Date()
+
+    enum CodingKeys: String, CodingKey { case id, name, videoPath, timeline, labels, playlist, codeWindow, angles, createdAt, modifiedAt }
+
+    init(id: UUID = UUID(), name: String = "Nuovo progetto", videoPath: String? = nil, timeline: TimelineModel = TimelineModel(), labels: LabelLibrary = LabelLibrary(), playlist: PlaylistModel = PlaylistModel(), codeWindow: CodeWindowModel = CodeWindowModel.defaultWindow(), angles: [MediaAngle] = [], createdAt: Date = Date(), modifiedAt: Date = Date()) {
+        self.id = id; self.name = name; self.videoPath = videoPath; self.timeline = timeline; self.labels = labels; self.playlist = playlist; self.codeWindow = codeWindow; self.angles = angles; self.createdAt = createdAt; self.modifiedAt = modifiedAt
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        name = try c.decodeIfPresent(String.self, forKey: .name) ?? "Nuovo progetto"
+        videoPath = try c.decodeIfPresent(String.self, forKey: .videoPath)
+        timeline = try c.decodeIfPresent(TimelineModel.self, forKey: .timeline) ?? TimelineModel()
+        labels = try c.decodeIfPresent(LabelLibrary.self, forKey: .labels) ?? LabelLibrary()
+        playlist = try c.decodeIfPresent(PlaylistModel.self, forKey: .playlist) ?? PlaylistModel()
+        codeWindow = try c.decodeIfPresent(CodeWindowModel.self, forKey: .codeWindow) ?? CodeWindowModel.defaultWindow()
+        angles = try c.decodeIfPresent([MediaAngle].self, forKey: .angles) ?? []
+        createdAt = try c.decodeIfPresent(Date.self, forKey: .createdAt) ?? Date()
+        modifiedAt = try c.decodeIfPresent(Date.self, forKey: .modifiedAt) ?? Date()
+    }
+}
+
+struct MediaAngle: Codable, Identifiable, Hashable {
+    var id = UUID()
+    var name: String
+    var path: String
+    var isDefault = false
+    var isMuted = false
+}
+
+struct SpatialPoint: Codable, Hashable {
+    var x: Double
+    var y: Double
 }
 
 struct TimelineModel: Codable {
@@ -40,6 +74,7 @@ struct TimelineInstance: Codable, Identifiable, Hashable {
     var note = ""
     var isFlagged = false
     var instanceNumber = 1
+    var location: SpatialPoint?
 
     var duration: Double { max(0, endTime - startTime) }
 }
@@ -100,6 +135,27 @@ struct PlaylistModel: Codable {
     var name = "Nuova playlist"
     var groups: [PlaylistGroup] = []
     var clips: [PlaylistClip] = []
+    var slides: [PlaylistSlide] = []
+    var effects: [PlaylistEffect] = []
+
+    init(name: String = "Nuova playlist", groups: [PlaylistGroup] = [], clips: [PlaylistClip] = [], slides: [PlaylistSlide] = [], effects: [PlaylistEffect] = []) {
+        self.name = name
+        self.groups = groups
+        self.clips = clips
+        self.slides = slides
+        self.effects = effects
+    }
+
+    enum CodingKeys: String, CodingKey { case name, groups, clips, slides, effects }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        name = try container.decodeIfPresent(String.self, forKey: .name) ?? "Nuova playlist"
+        groups = try container.decodeIfPresent([PlaylistGroup].self, forKey: .groups) ?? []
+        clips = try container.decodeIfPresent([PlaylistClip].self, forKey: .clips) ?? []
+        slides = try container.decodeIfPresent([PlaylistSlide].self, forKey: .slides) ?? []
+        effects = try container.decodeIfPresent([PlaylistEffect].self, forKey: .effects) ?? []
+    }
 }
 
 struct PlaylistGroup: Codable, Identifiable {
@@ -121,4 +177,28 @@ struct PlaylistClip: Codable, Identifiable {
     var note = ""
     var labels: [TimelineLabel] = []
     var groupID: UUID?
+}
+
+struct PlaylistSlide: Codable, Identifiable {
+    var id = UUID()
+    var imagePath: String
+    var title: String
+    var duration: Double = 3
+    var note = ""
+    var groupID: UUID?
+}
+
+struct PlaylistEffect: Codable, Identifiable {
+    enum Kind: String, Codable { case title, textOverlay, line, rectangle, circle }
+    var id = UUID()
+    var kind: Kind
+    var text: String = ""
+    var colorHex: String = "#FFFFFF"
+    var startTime: Double = 0
+    var endTime: Double = 3
+    var x: Double = 0.05
+    var y: Double = 0.05
+    var width: Double = 0.9
+    var height: Double = 0.12
+    var fontSize: Double = 32
 }

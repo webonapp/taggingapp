@@ -84,6 +84,10 @@ struct TimelineView: View {
         .background(Color(hex: row.colorHex).opacity(0.75))
         .clipShape(RoundedRectangle(cornerRadius: 4))
         .onTapGesture { currentTime = instance.startTime }
+        .gesture(DragGesture().onEnded { value in
+            let delta = Double(value.translation.width / 900) * max(duration, 1)
+            store.updateInstance(rowID: row.id, instanceID: instance.id, startTime: instance.startTime + delta, endTime: instance.endTime + delta)
+        })
         .help(instance.note)
     }
 }

@@ -31,19 +31,6 @@ struct CodeWindowView: View {
         }
         .padding(12)
         .background(.gray.opacity(0.08))
-        .onKeyPress(keys: [.one, .two, .three, .four]) { press in
-            let key: String
-            switch press.key {
-            case .one: key = "1"
-            case .two: key = "2"
-            case .three: key = "3"
-            case .four: key = "4"
-            default: return .ignored
-            }
-            guard let button = store.project.codeWindow.buttons.first(where: { $0.hotkey == key }) else { return .ignored }
-            activate(button)
-            return .handled
-        }
     }
 
     private func activate(_ button: CodeButton) {
